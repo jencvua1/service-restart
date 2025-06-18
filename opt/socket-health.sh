@@ -58,6 +58,10 @@ while :
 		13)
 		    systemctl status ${servicename} > /dev/null 2>&1 && state=12 && count=0 && echo "[$(date +%Y%m%d-%H%M%S)] ${servicename} started" >> ${logfile}		    
 		    ;;
+	         *)
+		      state=13
+	     	      count=0
+		    ;;		      
 	esac
 	number=$((state*100+count))
 	echo ${number} > ${statefile}
