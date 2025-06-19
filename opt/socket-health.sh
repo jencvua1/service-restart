@@ -1,15 +1,17 @@
 #!/bin/bash
 
 #ENV
+digits='^[0-9]+$'
 servicename=javaserv
 statefile=/tmp/fail-count-${servicename}
 logfile=/var/log/${servicename}.log
 serviceport=8989
 inputstring=stats
+outputstring=Started
 steptime=10
 
 #SCRIPT
-number=$(<${statefile}) 2>/dev/null || number=1300
+number=$(<${statefile}) 2>/dev/null; [[ ${number} =~ ${digits} ]] || number=1300
 state=${number::2}
 count=${number: 2}
 while :
@@ -18,7 +20,7 @@ while :
 	systemctl status ${servicename} > /dev/null 2>&1 || state=13
 	case ${state} in 
 		10)
-		    if [[ ! `echo -e ${inputstring} | nc -w3 127.0.0.1 ${serviceport} | grep -ae Started` ]]	
+		    if [[ ! `echo -e "${inputstring}" | nc -w3 127.0.0.1 ${serviceport} | grep -ae "${outputstring}"` ]]	
 			then
 				count=$((count+1))
 				echo "[$(date +%Y.%m.%d\ %H:%M:%S)] ${servicename} fail $count time(s)" >> ${logfile}
@@ -40,7 +42,7 @@ while :
 			count=0
 		    ;;
 		12)
-                if [[ ! `echo -e ${inputstring} | nc -w3 127.0.0.1 ${serviceport} | grep -ae Started` ]]	
+                if [[ ! `echo -e "${inputstring}" | nc -w3 127.0.0.1 ${serviceport} | grep -ae "${outputstring}"` ]]	
 	       	    	then
                                 count=$((count+1))
 				echo "[$(date +%Y.%m.%d\ %H:%M:%S)] trying $count - ${servicename} has not loaded" >> ${logfile}
